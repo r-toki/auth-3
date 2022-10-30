@@ -1,19 +1,42 @@
-use actix_web::{http::StatusCode, HttpResponse, ResponseError};
+use actix_web::{HttpResponse, ResponseError};
 use serde_json::{json, Map as JsonMap, Value as JsonValue};
 use thiserror::Error;
 use validator::ValidationErrors;
 
 #[derive(Debug, Error)]
 pub enum Error {
+    // 401
+    #[error("Unauthorized: {0}")]
+    Unauthorized(JsonValue),
+
+    // 403
+    #[error("Forbidden: {0}")]
+    Forbidden(JsonValue),
+
+    // 404
+    #[error("Not Found: {0}")]
+    NotFound(JsonValue),
+
+    // 422
     #[error("Unprocessable Entity: {0}")]
     UnprocessableEntity(JsonValue),
+
+    // 500
+    #[error("Internal Server Error")]
+    InternalServerError,
 }
 
 impl ResponseError for Error {
     fn error_response(&self) -> HttpResponse {
-        match *self {
-            Error::UnprocessableEntity(ref message) => {
-                HttpResponse::build(StatusCode::UNPROCESSABLE_ENTITY).json(message)
+        match self {
+            Error::Unauthorized(message) => HttpResponse::Unauthorized().json(message),
+            Error::Forbidden(message) => HttpResponse::Forbidden().json(message),
+            Error::NotFound(message) => HttpResponse::NotFound().json(message),
+            Error::UnprocessableEntity(message) => {
+                HttpResponse::UnprocessableEntity().json(message)
+            }
+            Error::InternalServerError => {
+                HttpResponse::InternalServerError().json("Internal Server Error")
             }
         }
     }
