@@ -1,3 +1,4 @@
+mod lib;
 mod users;
 
 use actix_web::web::ServiceConfig;

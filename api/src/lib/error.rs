@@ -1,4 +1,5 @@
 use actix_web::{HttpResponse, ResponseError};
+use jsonwebtoken::errors::Error as JwtError;
 use serde_json::{json, Map as JsonMap, Value as JsonValue};
 use thiserror::Error;
 use validator::ValidationErrors;
@@ -39,6 +40,12 @@ impl ResponseError for Error {
                 HttpResponse::InternalServerError().json("Internal Server Error")
             }
         }
+    }
+}
+
+impl From<JwtError> for Error {
+    fn from(error: JwtError) -> Self {
+        Error::Unauthorized(json!({"error": "An issue was found with the token provided"}))
     }
 }
 

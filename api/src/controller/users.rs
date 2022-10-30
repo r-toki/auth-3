@@ -3,24 +3,21 @@ use actix_web::{
     web::{Json, ServiceConfig},
 };
 use serde::Deserialize;
-use validator::Validate;
 
-use crate::lib::error::Error;
+use crate::{lib::error::Error, model::command::user::User};
 
 pub fn init(cfg: &mut ServiceConfig) {
     cfg.service(create);
 }
 
-#[derive(Debug, Deserialize, Validate)]
+#[derive(Debug, Deserialize)]
 struct Create {
-    #[validate(length(min = 3, max = 15, message = "must be 3-15 characters long"))]
     name: String,
-    #[validate(length(min = 8, max = 30, message = "must be 8-30 characters long"))]
     password: String,
 }
 
 #[post("/users")]
 async fn create(form: Json<Create>) -> Result<Json<()>, Error> {
-    form.validate()?;
+    let user = User::create(form.name.clone(), form.password.clone())?;
     Ok(Json(()))
 }
