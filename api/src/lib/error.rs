@@ -1,3 +1,4 @@
+use actix_web::{http::StatusCode, HttpResponse, ResponseError};
 use serde_json::{json, Map as JsonMap, Value as JsonValue};
 use thiserror::Error;
 use validator::ValidationErrors;
@@ -6,6 +7,16 @@ use validator::ValidationErrors;
 pub enum Error {
     #[error("Unprocessable Entity: {0}")]
     UnprocessableEntity(JsonValue),
+}
+
+impl ResponseError for Error {
+    fn error_response(&self) -> HttpResponse {
+        match *self {
+            Error::UnprocessableEntity(ref message) => {
+                HttpResponse::build(StatusCode::UNPROCESSABLE_ENTITY).json(message)
+            }
+        }
+    }
 }
 
 impl From<ValidationErrors> for Error {
