@@ -7,6 +7,7 @@ use crate::lib::{config::CONFIG, cors::cors, module::Module};
 use actix_web::{get, middleware::Logger, web, App, HttpServer, Responder};
 use dotenv::dotenv;
 use sqlx::PgPool;
+use std::sync::Arc;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -14,7 +15,7 @@ async fn main() -> std::io::Result<()> {
     env_logger::init_from_env(env_logger::Env::default().default_filter_or("info"));
 
     let pool = PgPool::connect(&CONFIG.database_url).await.unwrap();
-    let module = Module::new(pool);
+    let module = Arc::new(Module::new(pool));
 
     HttpServer::new(move || {
         App::new()

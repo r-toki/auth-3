@@ -38,7 +38,7 @@ impl ResponseError for Error {
                 HttpResponse::UnprocessableEntity().json(message)
             }
             Error::InternalServerError => {
-                HttpResponse::InternalServerError().json("Internal Server Error")
+                HttpResponse::InternalServerError().json(json!({"error": "Internal Server Error"}))
             }
         }
     }
