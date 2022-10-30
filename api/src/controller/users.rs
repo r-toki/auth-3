@@ -1,10 +1,13 @@
+use crate::{
+    lib::{error::Error, module::ModuleExt},
+    model::command::user::User,
+};
+
 use actix_web::{
     post,
     web::{Json, ServiceConfig},
 };
 use serde::Deserialize;
-
-use crate::{lib::error::Error, model::command::user::User};
 
 pub fn init(cfg: &mut ServiceConfig) {
     cfg.service(create);
@@ -17,7 +20,8 @@ struct Create {
 }
 
 #[post("/users")]
-async fn create(form: Json<Create>) -> Result<Json<()>, Error> {
+async fn create(module: ModuleExt, form: Json<Create>) -> Result<Json<()>, Error> {
     let user = User::create(form.name.clone(), form.password.clone())?;
+    module.user_repository.store(user).await?;
     Ok(Json(()))
 }

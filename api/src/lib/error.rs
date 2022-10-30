@@ -1,6 +1,7 @@
 use actix_web::{HttpResponse, ResponseError};
 use jsonwebtoken::errors::Error as JwtError;
 use serde_json::{json, Map as JsonMap, Value as JsonValue};
+use sqlx::Error as SqlxError;
 use thiserror::Error;
 use validator::ValidationErrors;
 
@@ -59,5 +60,14 @@ impl From<ValidationErrors> for Error {
         }
 
         Error::UnprocessableEntity(json!({ "errors": err_map }))
+    }
+}
+
+impl From<SqlxError> for Error {
+    fn from(error: SqlxError) -> Self {
+        match error {
+            SqlxError::RowNotFound => Error::NotFound(json!({"error": "Row not found"})),
+            _ => Error::InternalServerError,
+        }
     }
 }

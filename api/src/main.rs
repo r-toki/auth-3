@@ -2,7 +2,7 @@ mod controller;
 mod lib;
 mod model;
 
-use crate::lib::{config::CONFIG, cors::cors};
+use crate::lib::{config::CONFIG, cors::cors, module::Module};
 
 use actix_web::{get, middleware::Logger, web, App, HttpServer, Responder};
 use dotenv::dotenv;
@@ -13,11 +13,12 @@ async fn main() -> std::io::Result<()> {
     dotenv().ok();
     env_logger::init_from_env(env_logger::Env::default().default_filter_or("info"));
 
-    let conn = PgPool::connect(&CONFIG.database_url).await.unwrap();
+    let pool = PgPool::connect(&CONFIG.database_url).await.unwrap();
+    let module = Module::new(pool);
 
     HttpServer::new(move || {
         App::new()
-            .app_data(web::Data::new(conn.clone()))
+            .app_data(web::Data::new(module.clone()))
             .wrap(Logger::default())
             .wrap(cors())
             .configure(controller::init)
